@@ -1,0 +1,130 @@
+2. remote on/off
+
+start -> MQTT subscribe (Topic : remote control  on/off) -> wair for command
+|
+|-> (command recieved)
+-> yes -> validarte security -> swith relay on/off -> ACk via MQTT -> end
+
+|
+|-> (command not recieved)
+-> loop listening
+
+3 . Diagnostic Events - Meter tampering msg to be sent
+start -> initialise tamper detection 
+|
+|-> (tamper detected ?)
+
+-> yes -> validate tamper type -> store in nvm -> send tamper presence via MQTT -> end
+
+
+|
+|-> no tamper detected
+-> continue listening
+
+
+
+4. Security / Authentication
+
+start -> client connection request -> recieve authentication apdu
+|
+|-> verify credentials (HLS challenge - Response)
+
+pass -> establish secure session -> proceed to data exchange
+
+fail -> reject connection -> log event
+
+5. Meter Parameters
+
+start -> client request (get / set parameters) 
+    |-> decode dlms/cosem request 
+    |-> identify parameters (voltage , current , powwer etc)
+    |-> fetch value or update setting
+    |-> encrypt Response
+    |-> send MQTT response -> end
+
+
+6. MQTT Bridge
+
+start -> initialise MQTT client -> connect to broker
+
+|-> sunscribe to control topics
+|-> publish meter data -> Bridge to cloud/other modules
+|
+|->(connection lost ?)
+yes -> reconnect procedurre -> retry
+no -> continue data flow
+
+7. Encryption / Decryption
+
+start -> data ready for transmission 
+|-> apply AES/HMAC Encryption
+|-> send via MQTT
+|-> on recieve -> Decrypt data -> verify the integrity
+|-> pass or fail -> process or discard
+
+8. Import and Export of energy to grid
+
+start -> mesure energy flow direction
+
+|->(import?)
+yes -> add to import register
+|-> (export?)
+yes ->add to export register
+|-> log data -> send periodic report via MQTT -> end
+
+9. voltage control for smart meter
+
+start -> measure voltage 
+    |-> compare with tresholds
+    ->if over voltage -> log event + alert
+    -> if under voltage -> log event + alert
+    ->else normal operation 
+
+
+10. refresh data (45 days back)
+
+start -> scheduler(daily trigger)
+
+|->fetch historical data (up to 45 days back)
+|->compile report
+|->encrypt and send via MQTT
+|->if new entry
+|->refresh/delete the data from 45days (oldest data)
+|->else keep as it is 
+|->end
+
+11. Scheduler report
+
+start ->scheduler timer interrupt
+    |->collect meter data snapshot
+    |->format report(XML/JSON)
+    |->encrypt
+    |->send MQTT report to server
+
+
+12. Optical / manual communication or fetching of data
+
+start -> detect optical probe connected
+
+    |-> handshake with probe
+    |-> request/response data(manual fetch)
+    |-> provide parameters to technician
+    |-> end
+
+
+13. MQTT channel via RF module
+
+start -> initialise RF module -> establish RF link
+    |->configure as MQTT transport layer
+    |-> subscribe + publish to topics
+    |-> forward data between smart meter <-> broker
+    |
+    |-> (RF link lost ?)
+
+    yes -> retry / reintialise
+    no -> continue operation
+
+
+
+
+

@@ -1,0 +1,71 @@
+1. MQTT bridge (server side)
+
+start -> initialise MQTT client -> connect to broker
+    |-> subscribe to topics (meter data , events , tamper alerts)
+    |-> (messege recieved ?)
+         yes -> verify signature/decrypt payload
+          |-> (valid ?)
+                yes -> forward to DLMS parser /store in DB
+                no -> discard and log error
+        no -> keep listening
+
+    |-> (connection lost ?)
+        yes -> reconnect procedurre
+        no -> continue procedurre
+
+
+2. DlMS request handling (server side)
+
+start -> Appliation /  user requests data from meter
+     |-> build Dlms APDU (get/set/action/write)
+     |->apply security (authentication token + Encryption)
+     |->send APDU via MQTT to meter
+     |-> wait for response (ack/data/error)
+          |->(response valid ?)
+              yes -> decrypt and parse DLMS response
+                     -> update db / notify client
+
+              no -> retry or mark as failed
+
+
+3. Security Authentication / Encryption & Integrity (Server Side)
+
+Start → Connection Request to Meter
+   ↓ Initiate Authentication (HLS: Challenge-Response)
+   ↓ Generate Session Key (AES/HMAC)
+   ↓ Encrypt DLMS APDU
+   ↓ Send to Meter via MQTT
+   ↓ Receive Response → Decrypt & Verify Integrity
+       ↓ (Auth Passed?)
+          Yes → Session Active
+          No  → Reject / Retry / Raise Alert
+
+
+4. Data Storage & Processing (Additional – Server Side)
+
+Start → Receive Valid Meter Data
+   ↓ Parse DLMS Objects (OBIS Codes: Voltage, Energy, Tamper Events)
+   ↓ Store in Database (Time-Series / SQL / NoSQL)
+   ↓ Trigger Business Logic:
+       - Billing Engine
+       - Load Forecasting
+       - Demand Response
+   ↓ Archive Historical Data
+
+
+5. Analytics & Reporting (Additional – Server Side)
+
+Start → Daily/Hourly Scheduler Trigger
+   ↓ Fetch Data from DB (e.g., last 45 days)
+   ↓ Run Analytics (Consumption Patterns, Grid Import/Export, Voltage Issues)
+   ↓ Generate Reports (PDF/Excel/JSON)
+   ↓ Send to Stakeholders via Email/MQTT/Portal
+
+
+6. Event & Alert Handling (Additional – Server Side)
+
+Start → Receive Event Message (Tamper, Power Failure, Over Voltage)
+   ↓ Decrypt & Verify
+   ↓ Log Event into DB
+   ↓ Notify Stakeholders (SMS/Email/Mobile App)
+   ↓ If Critical → Trigger Control Action (e.g., Remote Disconnect)
