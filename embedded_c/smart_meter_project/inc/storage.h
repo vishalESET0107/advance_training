@@ -7,7 +7,7 @@
 // Storage addresses in Flash (adjust as per MCU memory map)
 #define FLASH_BASE_ADDR 0x08060000U // example flash sector
 
-#define STORAGE_SIZE 0x2000 // 8 kb allocated
+#define STORAGE_SIZE  0x40000// 2mb allocated
 
 
 // Data blocks
@@ -21,6 +21,14 @@ typedef struct {
     meter_hardware_info_t hardware;
     uint32_t crc;
 } storage_info_block_t;
+
+typedef struct {
+    gps_data_t gps;
+    uint32_t crc;
+} storage_gps_block_t;
+
+// API for GPS storage
+int storage_save_gps(const gps_data_t *data);
 
 
 //api

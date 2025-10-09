@@ -2,9 +2,11 @@
 #include "stm32l1xx_hal.h" // Adjust as per your MCU
 #include <string.h>
 
+
 //LAYOUT IN FLASH
 #define READINGS_ADDR FLASH_BASE_ADDR
 #define INFO_ADDR (FLASH_BASE_ADDR + 0X1000)
+#define GPS_ADDR (FLASH_BASE_ADDR + 0x3000) // Example address for GPS data
 
 
 
@@ -17,13 +19,14 @@ void storage_init(void){
 
 uint32_t storage_calculate_part(const uint8_t* data, uint32_t length){
     uint32_t crc = 0xFFFFFFFF;
+    if(data ==NULL) return crc;
     for(uint32_t i = 0; i < length; i++){
-        crc ^= data[i];
-        for(uint32_t j = 0; j < 8; j++){
-            if(crc & 1){
-                crc = (crc >> 1) ^ 0xEDB88320;
+        crc ^= ((uint32_t)data[i] << 24);
+        for(uint32_t bit = 0; bit < 8; bit++){
+            if(crc & 0x80000000){
+                crc = (crc >> 1) ^ 0x1;
             } else {
-                crc >>= 1;
+                crc <<= 1;
             }
         }
     }
@@ -70,4 +73,12 @@ int storage_load_info(consumer_info_t *cinfo, meter_hardware_info_t *hinfo) {
         return 0;
     }
     return -1;
+}
+
+
+int storage_save_gps(const gps_data_t *data){
+    storage_gps_block_t block;
+    memcpy(&block.gps, data, sizeof(gps_data_t));
+    block.crc = storage_calculate_part((uint8_t*)&block.gps, sizeof(gps_data_t));
+    return flash_write(GPS_ADDR, (uint8_t*)&block, sizeof(block));
 }
