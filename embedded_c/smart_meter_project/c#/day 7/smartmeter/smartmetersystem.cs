@@ -85,9 +85,9 @@ namespace smartmeter
 
             bool found = false;
 
-            foreach (var pair in customermetermap)
+            foreach (var item in customermetermap)
             {
-                if (pair.Key == cid)
+                if (item.Key == cid)
                 {
                     found = true;
                     break;
@@ -112,7 +112,22 @@ namespace smartmeter
             Console.Write("Enter Reading (kWh): ");
             double reading = Convert.ToDouble(Console.ReadLine());
 
-            var meter = meters.Find(m => m.meterserialno == mid);
+            meter meter = null;
+
+            foreach (meter m in meters)
+            {
+                if (m.meterserialno == mid)
+                {
+                    meter = m;
+                    break;
+                }
+            }
+
+            if (meter == null)
+                Console.WriteLine("Meter not found!");
+            else
+                Console.WriteLine("Meter found: " + meter.model);
+
             if (meter == null)
             {
                 Console.WriteLine("Meter not found!");
@@ -178,6 +193,8 @@ namespace smartmeter
 
             double totalunits = meter.totalreading;
             double totalbill = totalunits * rateperunit;
+            Console.WriteLine("");
+                
 
             Console.WriteLine("\nYour current bill details are as follows:");
             Console.WriteLine("---------------------------------------------");
