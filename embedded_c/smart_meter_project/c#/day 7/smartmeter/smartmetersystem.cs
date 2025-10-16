@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,8 +49,28 @@ namespace smartmeter
             Console.Write("Enter Meter Serial No: ");
             int mid = Convert.ToInt32(Console.ReadLine());
 
-            var cust = customers.Find(c => c.customerid == cid);
-            var meter = meters.Find(m => m.meterserialno == mid);
+            customer cust = null;
+            foreach (var c in customers)
+            {
+                if (c.customerid == cid)
+                {
+                    cust = c;
+                    break;
+                }
+            }
+
+            meter meter = null;
+            foreach (var m in meters)
+            {
+                if (m.meterserialno == mid)
+                {
+                    meter = m;
+                    break;
+                }
+            }
+
+
+
 
             if (cust == null)
             {
@@ -62,8 +83,20 @@ namespace smartmeter
                 return;
             }
 
-            if (!customermetermap.ContainsKey(cid))
+            bool found = false;
+
+            foreach (var pair in customermetermap)
             {
+                if (pair.Key == cid)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                
                 customermetermap[cid] = mid;
                 Console.WriteLine("Customer mapped with meter successfully.");
             }
@@ -94,16 +127,48 @@ namespace smartmeter
         {
             Console.Write("Enter Customer ID: ");
             int cid = Convert.ToInt32(Console.ReadLine());
+            bool found = false;
 
-            if (!customermetermap.ContainsKey(cid))
+            foreach (var pair in customermetermap)
+            {
+                if (pair.Key == cid)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+
+            if (!found)
             {
                 Console.WriteLine("This customer has no meter mapped!");
                 return;
             }
+            int mid = Convert.ToInt32(Console.ReadLine());
 
             int meterid = customermetermap[cid];
-            var meter = meters.Find(m => m.meterserialno == meterid);
-            var cust = customers.Find(c => c.customerid == cid);
+            customer cust = null;
+            foreach (var c in customers)
+            {
+                if (c.customerid == cid)
+                {
+                    cust = c;
+                    break;
+                }
+            }
+
+            meter meter = null;
+            foreach (var m in meters)
+            {
+                if (m.meterserialno == mid)
+                {
+                    meter = m;
+                    break;
+                }
+            }
+
+
+
 
             if (meter == null || cust == null)
             {
@@ -151,7 +216,7 @@ namespace smartmeter
                         Console.WriteLine("Terminating...");
                         break;
                     default:
-                        Console.WriteLine("Invalid choice!");
+                        Console.WriteLine("Invalid");
                         break;
                 }
 
