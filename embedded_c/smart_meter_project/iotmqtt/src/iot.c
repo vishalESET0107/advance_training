@@ -109,16 +109,6 @@ void init_meter(){
     // for (int i=0;i<MAX_OBJECTS;i++){
     //     printf("intialized obis code for %d: %d\n",i,objects[i].code->f);
     // }
-
-    ObisCode obis1 = {1,1,1,1,1,1};
-  ObisCode obis2 = {1,1,1,1,1,2};
-   ObisCode obis3 = {1,1,1,1,1,3};
-
-CosemObject objects[] = {
-    {&obis1,1.1 },
-    {&obis2,2.1 },
-    {&obis3,33434.435342345 },
-};
 }
 
 // void print_cosem_objects(){
